@@ -1,27 +1,15 @@
-import time 
-import pywhatkit
-import pyautogui
-# from pynput.keyboard import Key, Controller
+from selenium import webdriver
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
 
-# keyboard = Controller()
+options = webdriver.ChromeOptions() 
 
+userdatadir = 'C:/Users/Chen1/AppData/Local/Google/Chrome/User Data/Guest Profile'
+options.add_argument(f"--user-data-dir={userdatadir}")
 
-def send_whatsapp_message(msg: str):
-    try:
-        pywhatkit.sendwhatmsg_instantly(
-            phone_no="XXX12345678", 
-            message=msg,
-            tab_close=True
-        )
-        time.sleep(10)
-        pyautogui.click()
-        time.sleep(2)
-        # keyboard.press(Key.enter)
-        # keyboard.release(Key.enter)
-        print("Message sent!")
-    except Exception as e:
-        print(str(e))
+driver = webdriver.Chrome(options=options)
+driver.get('https://web.whatsapp.com/')
 
-
-if __name__ == "__main__":
-    send_whatsapp_message(msg="Test message from a Python script!")
+x = input()
+driver.quit()
