@@ -21,16 +21,8 @@ def wait_for_whatsapp_to_load(driver):
 
 def scroll_chat_list(driver):
     panel = driver.find_element(By.ID, 'pane-side')
-    scroll_amount = 300
-    last_height = driver.execute_script("return arguments[0].scrollTop;", panel)
-
-    while True:
-        driver.execute_script(f"arguments[0].scrollTop += {scroll_amount};", panel)
-        time.sleep(0.1)  # Adjust based on the load time of your chat content
-        new_height = driver.execute_script("return arguments[0].scrollTop;", panel)
-        if new_height == last_height:
-            break
-        last_height = new_height
+    scroll_amount = 1000
+    driver.execute_script(f"arguments[0].scrollTop += {scroll_amount};", panel)
 
 def extract_chat_names(driver):
     panel = driver.find_element(By.ID, 'pane-side')
@@ -80,7 +72,6 @@ def leave_group(driver, chat_list, group_index : int):
 
     exit_group_button = driver.find_element(By.XPATH, "//div[text()='Exit group']")    # Handle the confirmation dialog that appears when trying to exit a group
     exit_group_button.click()
-    return chat_title
  
 def delete_group(driver, chat_list, group_index : int):
     chosen_chat = chat_list[group_index-1].find_element(By.TAG_NAME, 'span')
@@ -108,16 +99,28 @@ def delete_group(driver, chat_list, group_index : int):
 
 if __name__ == "__main__":
     user_data_dir = 'C:/Users/Chen1/AppData/Local/Google/Chrome/User Data/Guest Profile'
-
     driver = initialize_driver(user_data_dir)
     wait_for_whatsapp_to_load(driver)
 
-    # scroll_chat_list(driver)
+    print('Hello and welcome!\n Enter "leave" for leaving and deleting the chosen WhatsApp group.\n Enter "next" for loading more groups.\n Enter "quit" for quit')
+   
     chat_list = extract_chat_names(driver)
-    leave_chat_index = input('Choose group to delete')
-    # group_name = leave_group(driver, chat_list, int(leave_chat_index))
-    # print('Left group now deleting')
-    delete_group(driver, chat_list, int(leave_chat_index))
-    # Example usage: leave_group(driver, "Group Name To Leave")
+    user_command = input('What would you like to do? (leave/next): ')
+    
+    while user_command != 'quit':
+        match user_command:
+            case 'leave':
+                leave_chat_index = input('Choose group to delete')
+                leave_group(driver, chat_list, int(leave_chat_index))
+                delete_group(driver, chat_list, int(leave_chat_index))
+            case 'next':
+                scroll_chat_list(driver)
+                chat_list = extract_chat_names(driver)
+            case _:
+                print('Unknow command. Try again')
+
+        user_command = input('What would you like to do? (leave/next): ')
+
+
     input("Press any key to exit...")
     driver.quit()
