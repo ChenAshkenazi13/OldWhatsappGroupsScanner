@@ -58,21 +58,52 @@ def leave_group(driver, chat_list, group_index : int):
     if yes_or_no != 'yes':
         print('Fine! Not leaving then')
         return
-
+    
     driver.execute_script("arguments[0].scrollIntoView();", chosen_chat)
     
     # Right-click on the chosen chat to open the context menu
     actions = ActionChains(driver)
     actions.context_click(chosen_chat).perform()
     
+    time.sleep(2)
+
+    # The exact number of presses required may vary.
     actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
     actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
     actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
     
-    time.sleep(0.5)
+    time.sleep(2)
+
     actions.send_keys(Keys.ENTER).perform()
 
-    exit_group_button = driver.find_element(By.XPATH, "//div[text()='Exit group']")   
+    time.sleep(2)
+
+    exit_group_button = driver.find_element(By.XPATH, "//div[text()='Exit group']")    # Handle the confirmation dialog that appears when trying to exit a group
+    exit_group_button.click()
+    return chat_title
+ 
+def delete_group(driver, chat_list, group_index : int):
+    chosen_chat = chat_list[group_index-1].find_element(By.TAG_NAME, 'span')
+    chat_title = chosen_chat.get_attribute('title')
+    
+    yes_or_no = input(f'Is {chat_title[::-1]} the group you want to leave?(yes/no)   ')  # Prints in reverse for Hebrew 
+    if yes_or_no != 'yes':
+        print('Fine! Not leaving then')
+        return
+    
+    driver.execute_script("arguments[0].scrollIntoView();", chosen_chat)
+
+    actions = ActionChains(driver)
+    actions.context_click(chosen_chat).perform()
+    
+    time.sleep(2)
+
+    actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
+    actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
+
+    actions.send_keys(Keys.ENTER).perform()
+
+    exit_group_button = driver.find_element(By.XPATH, "//div[text()='Delete group']")    # Handle the confirmation dialog that appears when trying to exit a group
     exit_group_button.click()
 
 if __name__ == "__main__":
@@ -83,8 +114,10 @@ if __name__ == "__main__":
 
     # scroll_chat_list(driver)
     chat_list = extract_chat_names(driver)
-    leave_chat_index = input('Choose group to leave')
-    group_name = leave_group(driver, chat_list, int(leave_chat_index))
-
+    leave_chat_index = input('Choose group to delete')
+    # group_name = leave_group(driver, chat_list, int(leave_chat_index))
+    # print('Left group now deleting')
+    delete_group(driver, chat_list, int(leave_chat_index))
+    # Example usage: leave_group(driver, "Group Name To Leave")
     input("Press any key to exit...")
     driver.quit()
