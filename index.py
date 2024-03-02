@@ -1,58 +1,90 @@
 from selenium import webdriver
-from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import time
 
-#TODO: Remove .gitignore from commits 
-options = webdriver.ChromeOptions() 
+def initialize_driver(user_data_dir):
+    options = webdriver.ChromeOptions()
+    options.add_argument(f"--user-data-dir={user_data_dir}")
 
-userdatadir = 'C:/Users/Chen1/AppData/Local/Google/Chrome/User Data/Guest Profile'
-options.add_argument(f"--user-data-dir={userdatadir}")
+    driver = webdriver.Chrome(options=options)
+    driver.get('https://web.whatsapp.com/')
+    return driver
 
-driver = webdriver.Chrome(options=options)
-driver.execute_script("document.body.style.zoom='50%'")
-driver.get('https://web.whatsapp.com/')
+def wait_for_whatsapp_to_load(driver):
+    wait = WebDriverWait(driver, 600)  # Adjust the timeout as needed
+    wait.until(EC.presence_of_element_located((By.ID, 'side')))
 
-wait = WebDriverWait(driver, 600)  # Adjust the timeout as needed
-# wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'canvas[aria-label="Scan me!"]')))
-# print("QR Code scanned. Logged in.")
+def scroll_chat_list(driver):
+    panel = driver.find_element(By.ID, 'pane-side')
+    scroll_amount = 300
+    last_height = driver.execute_script("return arguments[0].scrollTop;", panel)
 
+    while True:
+        driver.execute_script(f"arguments[0].scrollTop += {scroll_amount};", panel)
+        time.sleep(0.1)  # Adjust based on the load time of your chat content
+        new_height = driver.execute_script("return arguments[0].scrollTop;", panel)
+        if new_height == last_height:
+            break
+        last_height = new_height
 
-wait.until(EC.presence_of_element_located((By.ID, 'side')))
-
-# Find elements that represent chats (both individual and groups)
-# Note: The class name ('_210SC') is likely to change; inspect the element to find the current class name
-elements = driver.find_elements(By.ID, 'side')
-print("Found chats:")
-for element in elements:
-    paneSide = element.find_element(By.ID, 'pane-side')
-    className = paneSide.get_attribute('class')
-    print(f'class = {className}')
-    chats = paneSide.find_element(By.CLASS_NAME, '_3YS_f')
-    chatsAttributes = str(chats.get_attribute('aria-label')) +  str(chats.get_attribute('role'))
-    print(f'chatsAttributes = {chatsAttributes}')
-    chatsForReal = chats.find_elements(By.CLASS_NAME, '_21S-L')
+def extract_chat_names(driver):
+    panel = driver.find_element(By.ID, 'pane-side')
+    chat_list = panel.find_elements(By.CLASS_NAME, '_21S-L')
+    chat_set = set()
     count = 1
-    for chat in chatsForReal:
-        singleChat = chat.find_element(By.TAG_NAME, 'span')
-        singleChatTitle = singleChat.get_attribute('title')
-        print(f'{count}) {singleChatTitle[::-1]}')
-        count += 1
-    # chatsForReal[1].
 
-    # paneSide.find_element(By.CLASS_NAME,)
-# Filter out groups from the chats
-# This is tricky because WhatsApp Web does not easily distinguish between groups and individual chats by class names or ids
-# You might need to look for specific attributes or patterns that can help you distinguish groups from individual chats
-# groups = [chat for chat in chats if "some distinguishing feature" in chat.text]
+    for chat in chat_list:
+        try:
+            singleChat = chat.find_element(By.TAG_NAME, 'span')
+            singleChatTitle = singleChat.get_attribute('title')
+            if singleChatTitle not in chat_set:
+                chat_set.add(singleChatTitle)
+                print(f'{count}) {singleChatTitle[::-1]}')  # Prints in reverse for Hebrew 
+                count += 1
+        except Exception as e:
+            print("Error processing a chat:", e)
+    return chat_list
 
-# Print or process the groups
-# for group in groups:
-#     print(group)  # or any other processing you want to do
+def leave_group(driver, chat_list, group_index : int):
+    chosen_chat = chat_list[group_index-1].find_element(By.TAG_NAME, 'span')
+    chat_title = chosen_chat.get_attribute('title')
+    
+    yes_or_no = input(f'Is this the group you want to leave?: {chat_title[::-1]}')  # Prints in reverse for Hebrew 
+    if yes_or_no != 'yes':
+        print('Fine! Not leaving then')
+        return
 
-print("DONE")
-x = input()
-driver.quit()
+    driver.execute_script("arguments[0].scrollIntoView();", chosen_chat)
+    
+    # Right-click on the chosen chat to open the context menu
+    actions = ActionChains(driver)
+    actions.context_click(chosen_chat).perform()
+    
+    actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
+    actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
+    actions.send_keys(Keys.ARROW_DOWN)  # Adjust the number of presses as necessary
+    
+    time.sleep(0.5)
+    actions.send_keys(Keys.ENTER).perform()
+
+    exit_group_button = driver.find_element(By.XPATH, "//div[text()='Exit group']")   
+    exit_group_button.click()
+
+if __name__ == "__main__":
+    user_data_dir = 'C:/Users/Chen1/AppData/Local/Google/Chrome/User Data/Guest Profile'
+
+    driver = initialize_driver(user_data_dir)
+    wait_for_whatsapp_to_load(driver)
+
+    # scroll_chat_list(driver)
+    chat_list = extract_chat_names(driver)
+    leave_chat_index = input('Choose group to leave')
+    group_name = leave_group(driver, chat_list, int(leave_chat_index))
+
+    input("Press any key to exit...")
+    driver.quit()
