@@ -101,7 +101,7 @@ def perform_group_action(driver, chat_list, group_index : int):
 
 
 if __name__ == "__main__":
-    user_data_dir = 'C:/Users/Chen1/AppData/Local/Google/Chrome/User Data/Guest Profile'
+    user_data_dir = 'C:/Users/<YOUR_USER>/AppData/Local/Google/Chrome/User Data/Guest Profile'
     driver = initialize_driver(user_data_dir)
     wait_for_whatsapp_to_load(driver)
 
