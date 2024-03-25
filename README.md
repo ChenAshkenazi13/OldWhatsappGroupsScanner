@@ -1,8 +1,11 @@
 # Old Whatsapp groups scanner
 
 ## Description
-We all have Whatsapp groups that are not active today. This project offers a convenient way to manage your participation in old WhatsApp groups.
+This project offers a convenient way to manage your participation in old WhatsApp groups.
 Utilizing the power of Python, this tool scans all WhatsApp groups associated with your account and prompts you to decide whether you wish to remain in each group or leave.
+
+## Project Motivation
+This project was inspired by a personal incident: after switching to a new phone, I discovered that all my previous WhatsApp group texts were deleted. Rather than attempting to recover these messages, I saw this as an opportunity to declutter my digital life by exiting numerous WhatsApp groups that are no longer in use. Recognizing the manual process was inefficient, I decided to automate it.
 
 # Prerequirements
 1. You have python installed on your PC. If not please download it from: `https://www.python.org/downloads/`.
