@@ -22,6 +22,11 @@ In summary enter:
 * `next` - To scroll down and load more chats.
 * `quit` - To exit the program.
 
+### Importent note
+After following the instructions above when choosing to leave a number of groups from the printed list:
+Instead of running script for each individual group you can enter the following format in order to leave and delete number of groups. 
+`first_group_index::last_group_index`.
+
 ## Code changes
 1. Update the `user_data_dir` to the location of your `Guest Profile` folder. The default location is:
 `user_data_dir = 'C:/Users/<YOUR_USER>/AppData/Local/Google/Chrome/User Data/Guest Profile'`.

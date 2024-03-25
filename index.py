@@ -7,8 +7,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-dramatic_effect_time = 2  #Wait time in minutes for dramatic effect
-scroll_amount = 1000      #Adjust as needed
+dramatic_effect_time = 1  #Wait time in minutes for dramatic effect
+scroll_amount = 1500      #Adjust as needed
 web_driver_wait = 600     #Adjuest as needed
 
 def wait_for_dramatic_effect():
@@ -98,10 +98,19 @@ def perform_group_action(driver, chat_list, group_index : int):
     except Exception as e:
                 print("Error processing a chat:", e)        
 
+def parse_input_range(input : str):
+    if "::" in input:
+        parts = input.split("::")
+        first_index = int(parts[0])
+        last_index = int(parts[1])
+    else:
+        first_index = int(input)
+        last_index = first_index  
 
+    return first_index, last_index
 
 if __name__ == "__main__":
-    user_data_dir = 'C:/Users/<YOUR_USER>/AppData/Local/Google/Chrome/User Data/Guest Profile'
+    user_data_dir = 'C:/Users/Chen1/AppData/Local/Google/Chrome/User Data/Guest Profile'
     driver = initialize_driver(user_data_dir)
     wait_for_whatsapp_to_load(driver)
 
@@ -114,7 +123,13 @@ if __name__ == "__main__":
         match user_command:
             case 'leave':
                 leave_chat_index = input('Choose group to delete: ')
-                perform_group_action(driver, chat_list, int(leave_chat_index))
+                first_index, last_index = parse_input_range(leave_chat_index)
+                current_index = first_index
+
+                while current_index <= last_index:
+                    perform_group_action(driver, chat_list, current_index)
+                    print(f'Left group {current_index}')
+                    current_index += 1
 
             case 'next':
                 scroll_chat_list(driver)
